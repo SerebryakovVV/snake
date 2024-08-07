@@ -1,0 +1,197 @@
+<canvas id="canvas"></canvas>
+<script>    
+
+
+const field = [];
+const FIELD_WIDTH = 30;
+const FIELD_HEIGHT = 20;
+const CELL_SIZE = 20;
+const snakeArray = [];
+const APPLE_COLOR = "red";
+const SNAKE_COLOR = "green";
+const FIELD_COLOR = "#eee";
+const canvas = document.getElementById("canvas");
+const ctx = this.canvas.getContext("2d");
+canvas.width = FIELD_WIDTH * CELL_SIZE;
+canvas.height = FIELD_HEIGHT * CELL_SIZE;
+canvas.style.border = "1px solid black"
+
+
+class Cell {
+    constructor(state, row, col) {
+        this.state = state;
+        this.row = row;
+        this.col = col;
+    }
+}
+
+
+class Game {
+
+    constructor(direction) {
+        this.direction = direction;
+    }
+
+    fillFieldArray() {
+        for (let i = 0; i < FIELD_HEIGHT; i++) {
+            field.push([]);
+            for (let j = 0; j < FIELD_WIDTH; j++) {
+                field[i].push(new Cell("field", i, j));
+            }    
+        }
+    }
+
+    drawCell(cell) {
+        if (cell.state === "field") {
+            ctx.fillStyle = FIELD_COLOR;
+        } else if (cell.state === "apple") {
+            ctx.fillStyle = APPLE_COLOR;
+        } else {
+            ctx.fillStyle = SNAKE_COLOR;
+        }
+        ctx.fillRect(cell.col*CELL_SIZE, cell.row*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        ctx.stroke();
+        ctx.fillStyle = "black";
+        ctx.rect(cell.col*CELL_SIZE, cell.row*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        ctx.stroke();
+    }
+
+    drawFieldArray() {
+        for (let i = 0; i < field.length; i++) {
+            for (let j = 0; j < field[i].length; j++) {
+                this.drawCell(field[i][j]);
+            }    
+        }
+    }
+
+    getNextCell(cell, direction) {
+
+        if (direction === "ArrowUp") {
+
+            if (cell.row > 0) {
+                return field[cell.row-1][cell.col];
+            } else return null;
+
+        } else if (direction === "ArrowRight") {
+
+            if (cell.col < FIELD_WIDTH - 1) {
+                return field[cell.row][cell.col+1];
+            } else return null;
+
+        } else if (direction === "ArrowDown") {
+
+            if (cell.row < FIELD_HEIGHT - 1) {
+                return field[cell.row+1][cell.col];
+            } else return null; 
+
+        } else {
+
+            if (cell.col > 0) {
+                return field[cell.row][cell.col-1];
+            } else return null; 
+
+        }
+    }
+
+    changeDirection(key) {
+        if (key === this.direction) {
+            return;
+        } else {
+            if (!(
+                (key === "ArrowUp" && this.direction !== "ArrowDown") ||
+                (key === "ArrowRight" && this.direction !== "ArrowLeft") ||
+                (key === "ArrowDown" && this.direction !== "ArrowUp") ||
+                (key === "ArrowLeft" && this.direction !== "ArrowRight")
+            )) {
+                return;
+            } else {
+                this.direction = key;
+            }
+        }        
+    }
+
+    makeMove() {
+        let nextCell = this.getNextCell(snakeArray[0], this.direction);
+        if (!nextCell || nextCell.state === "snake") {
+            console.log("game over");
+            return;
+        } else if (nextCell.state === "field") {
+            let tail = snakeArray.pop();
+            tail.state = "field";
+            this.drawCell(tail);
+            nextCell.state = "snake";
+            this.drawCell(nextCell);
+            snakeArray.unshift(nextCell);
+        } else {
+            nextCell.state = "snake";
+            this.drawCell(nextCell);
+            snakeArray.unshift(nextCell);
+            this.spawnApple();
+        }
+        setTimeout(()=>this.makeMove(), 200);
+    }
+
+
+    spawnApple() {
+        let cellToEvaluate = field[Math.floor(Math.random() * FIELD_HEIGHT)][Math.floor(Math.random() * FIELD_WIDTH)];
+        console.log(cellToEvaluate);
+
+        if (cellToEvaluate.state === "field") {
+            cellToEvaluate.state = "apple";
+            this.drawCell(cellToEvaluate);
+        } else {
+            this.spawnApple()
+        }
+        
+    }
+
+
+
+
+
+
+}
+
+
+const game = new Game("ArrowUp");
+game.fillFieldArray();
+field[6][8].state = "snake";
+field[7][8].state = "snake";
+field[8][8].state = "snake";
+field[9][8].state = "snake";
+field[10][8].state = "snake";
+snakeArray.push(field[6][8]);
+snakeArray.push(field[7][8]);
+snakeArray.push(field[8][8]);
+snakeArray.push(field[9][8]);
+snakeArray.push(field[10][8]);
+field[15][15].state = "apple";
+game.drawFieldArray();
+document.addEventListener("keydown", e=>game.changeDirection(e.key));
+game.makeMove();
+
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+// game.spawnApple();
+
+
+//todo: change in direction should trigger makeMove; clear interval
+
+
+</script>
